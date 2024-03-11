@@ -36,7 +36,7 @@ app.get('/url/:shortId', async (req, res) => {
             return res.status(404).json({ error: 'Short URL not found' });
         }
         // Redirect to the original URL
-        res.redirect(entry.redirectUrl);
+        res.redirect(entry.redirectURL);
     } catch (error) {
         console.error('Error while processing redirect:', error);
         res.status(500).json({ error: 'Internal server error' });
