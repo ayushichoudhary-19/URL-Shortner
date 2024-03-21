@@ -9,17 +9,29 @@ async function handleGenerateShortURL(req, res) {
         return res.status(400).json({ error: 'URL is required' });
     }
 
-    const shortID = uid.rnd();
-
     try {
+        // Check if the URL already exists in the database
+        let existingURL = await URL.findOne({ redirectURL: body.url });
+
+        if (existingURL) {
+            // If the URL already exists, return its short ID
+            return res.render("home",{
+                id: existingURL.shortId,
+            });
+        }
+
+        // Generate a new short ID
+        const shortID = uid.randomUUID();
+
+        // Create a new URL entry in the database
         await URL.create({
             shortId: shortID,
             redirectURL: body.url,
             visitHistory: [],
         });
     
-        return res.json({
-            id: shortID 
+        return res.render("home",{
+            id: shortID,
         });
     } catch (error) {
         console.error('Error generating short URL:', error);
@@ -27,13 +39,24 @@ async function handleGenerateShortURL(req, res) {
     }
 }
 
-async function handleGetAnalytics(req,res){
-        const shortId = req.params.shortId;
-        const result = await URL.findOne({shortId});
+async function handleGetAnalytics(req, res) {
+    const shortId = req.params.shortId;
+
+    try {
+        const result = await URL.findOne({ shortId });
+        
+        if (!result) {
+            return res.status(404).json({ error: 'Short URL not found' });
+        }
+
         return res.json({
-           totalClicks: result.visitHistory.length,
-           analytics: result.visitHistory, 
+            totalClicks: result.visitHistory.length,
+            analytics: result.visitHistory, 
         });
+    } catch (error) {
+        console.error('Error retrieving analytics:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
 }
 
-module.exports = {handleGenerateShortURL,handleGetAnalytics};
+module.exports = { handleGenerateShortURL, handleGetAnalytics };
