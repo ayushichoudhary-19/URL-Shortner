@@ -18,10 +18,9 @@ app.set("views", path.resolve("./views"));
 
 // Middleware
 app.use(express.json());
-app.use('/url', urlRoute);
+app.use(express.urlencoded({ extended: false }));
+app.use(urlRoute);
 app.use('/',staticRoute);
-app.use(express.urlencoded({ extended: false}));
-
 
 // Route to handle redirect
 app.get('/url/:shortId', async (req, res) => {
